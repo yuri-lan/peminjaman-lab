@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Pengembalian</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Pengembalian Barang</h1>
+        <h2>Peminjaman Aktif</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal Pinjam</th><th>Siswa</th><th>Jatuh Tempo</th><th>Denda</th><th>Aksi</th></tr></thead>
+                <tbody id="tblAktif"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); render();
+
+    function render() {
+        const list = getPeminjaman().filter(p => p.status === 'dipinjam');
+        document.getElementById('tblAktif').innerHTML = list.length === 0
+            ? '<tr><td colspan="6" class="empty">Tidak ada peminjaman aktif</td></tr>'
+            : list.map((p, i) => {
+                const denda = hitungDenda(p.tanggal_kembali);
+                return `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${p.tanggal_pinjam}</td>
+                        <td>${p.nama_siswa}</td>
+                        <td>${p.tanggal_kembali}</td>
+                        <td>${denda > 0 ? '<b style="color:#ef4444;">' + formatRupiah(denda) + '</b>' : '-'}</td>
+                        <td><button class="btn-sm btn-primary" onclick="kembalikan(${p.id})">Kembalikan</button></td>
+                    </tr>
+                `;
+            }).join('');
+    }
+
+    function kembalikan(id) {
+        const p = getPeminjaman().find(x => x.id === id);
+        if (!p) return;
+        const denda = hitungDenda(p.tanggal_kembali);
+        const kondisi = prompt('Kondisi barang? (baik / rusak)', 'baik');
+        if (kondisi === null) return;
+        if (confirm(`Kembalikan? ${denda > 0 ? 'Denda: ' + formatRupiah(denda) : 'Tidak ada denda'}`)) {
+            kembalikanPeminjaman(id, kondisi, denda);
+            render();
+            alert('✅ Barang dikembalikan!');
+        }
+    }
+</script>
+</body>
+</html>

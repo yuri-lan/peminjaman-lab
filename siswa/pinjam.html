@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajukan Pinjam</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>🎓 Area Siswa</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Daftar Barang</a>
+            <a href="pinjam.html">Ajukan Pinjam</a>
+            <a href="riwayat.html">Riwayat Saya</a>
+        </nav>
+        <div class="user-info">
+            <p id="userInfo"></p>
+            <a href="#" onclick="logoutSiswa()" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Ajukan Peminjaman</h1>
+        <p class="welcome">Pilih barang yang ingin kamu pinjam</p>
+
+        <form class="form" onsubmit="event.preventDefault(); simpan();">
+            <label>Tanggal Pinjam</label>
+            <input type="date" id="tglPinjam" required>
+            <label>Tanggal Kembali</label>
+            <input type="date" id="tglKembali" required>
+            <h3>Pilih Barang</h3>
+            <div id="barangList"></div>
+            <button type="button" class="btn-secondary" onclick="tambahBaris()">+ Tambah Barang</button>
+            <br><br>
+            <button type="submit" class="btn-primary">Ajukan Peminjaman</button>
+        </form>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); cekLoginSiswa();
+    const saya = getCurrentSiswa();
+    document.getElementById('userInfo').innerHTML = `👤 ${saya.nama}<br><span style="font-size:11px; opacity:0.7;">${saya.kelas} — ${saya.nis}</span>`;
+
+    document.getElementById('tglPinjam').value = tanggalHariIni();
+    document.getElementById('tglKembali').value = tanggalPlusHari(3);
+    tambahBaris();
+
+    function tambahBaris() {
+        const barangs = getBarang().filter(b => b.stok > 0);
+        const div = document.createElement('div');
+        div.className = 'barang-row';
+        div.innerHTML = `
+            <select class="pilihBarang" required>
+                <option value="">-- Pilih Barang --</option>
+                ${barangs.map(b => `<option value="${b.id}">${b.kode} - ${b.nama} (Stok: ${b.stok})</option>`).join('')}
+            </select>
+            <input type="number" class="jumlahBarang" min="1" value="1" required>
+            <button type="button" onclick="this.parentElement.remove()">✖</button>
+        `;
+        document.getElementById('barangList').appendChild(div);
+    }
+
+    function simpan() {
+        const tglPinjam = document.getElementById('tglPinjam').value;
+        const tglKembali = document.getElementById('tglKembali').value;
+        const rows = document.querySelectorAll('#barangList .barang-row');
+        const items = [];
+        rows.forEach(r => {
+            const idb = r.querySelector('.pilihBarang').value;
+            const jml = parseInt(r.querySelector('.jumlahBarang').value);
+            if (idb && jml > 0) items.push({ id_barang: parseInt(idb), jumlah: jml });
+        });
+        if (items.length === 0) return alert('Pilih minimal 1 barang!');
+
+        tambahPeminjaman({
+            id_siswa: saya.id,
+            nama_siswa: saya.nama,
+            kelas: saya.kelas,
+            tanggal_pinjam: tglPinjam,
+            tanggal_kembali: tglKembali,
+            items: items
+        });
+        alert('✅ Peminjaman berhasil diajukan!');
+        window.location.href = 'riwayat.html';
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Siswa</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Data Siswa</h1>
+        <button class="btn-primary" onclick="showForm()">+ Tambah Siswa</button>
+
+        <div id="formBox" class="form" style="display:none; margin-top:20px;">
+            <h3 id="formTitle">Tambah Siswa</h3>
+            <input type="hidden" id="editId">
+            <label>NIS</label><input type="text" id="nis">
+            <label>Nama Siswa</label><input type="text" id="nama">
+            <label>Kelas</label><input type="text" id="kelas">
+            <label>No HP</label><input type="text" id="no_hp">
+            <button class="btn-primary" onclick="simpan()">Simpan</button>
+            <button class="btn-secondary" onclick="hideForm()">Batal</button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:20px;">
+            <table>
+                <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>No HP</th><th>Aksi</th></tr></thead>
+                <tbody id="tblSiswa"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); render();
+
+    function render() {
+        const list = getSiswa();
+        document.getElementById('tblSiswa').innerHTML = list.length === 0
+            ? '<tr><td colspan="6" class="empty">Belum ada siswa</td></tr>'
+            : list.map((s, i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${s.nis}</td>
+                    <td>${s.nama}</td>
+                    <td>${s.kelas}</td>
+                    <td>${s.no_hp || '-'}</td>
+                    <td>
+                        <button class="btn-sm btn-warning" onclick="edit(${s.id})">Edit</button>
+                        <button class="btn-sm btn-danger" onclick="hapus(${s.id})">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+    function showForm() {
+        document.getElementById('formBox').style.display = 'block';
+        document.getElementById('formTitle').innerText = 'Tambah Siswa';
+        document.getElementById('editId').value = '';
+        ['nis','nama','kelas','no_hp'].forEach(id => document.getElementById(id).value = '');
+    }
+    function hideForm() { document.getElementById('formBox').style.display = 'none'; }
+    function simpan() {
+        const id = document.getElementById('editId').value;
+        const data = {
+            nis: document.getElementById('nis').value,
+            nama: document.getElementById('nama').value,
+            kelas: document.getElementById('kelas').value,
+            no_hp: document.getElementById('no_hp').value,
+        };
+        if (!data.nis || !data.nama) return alert('NIS & Nama wajib diisi!');
+        if (id) updateSiswa(parseInt(id), data);
+        else tambahSiswa(data);
+        hideForm(); render();
+    }
+    function edit(id) {
+        const s = getSiswa().find(x => x.id === id); if (!s) return;
+        document.getElementById('formBox').style.display = 'block';
+        document.getElementById('formTitle').innerText = 'Edit Siswa';
+        document.getElementById('editId').value = s.id;
+        document.getElementById('nis').value = s.nis;
+        document.getElementById('nama').value = s.nama;
+        document.getElementById('kelas').value = s.kelas;
+        document.getElementById('no_hp').value = s.no_hp || '';
+    }
+    function hapus(id) {
+        if (confirm('Yakin hapus siswa ini?')) { hapusSiswa(id); render(); }
+    }
+</script>
+</body>
+</html>

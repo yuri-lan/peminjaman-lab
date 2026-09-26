@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Peminjaman</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Data Peminjaman</h1>
+        <button class="btn-primary" onclick="showForm()">+ Peminjaman Baru</button>
+
+        <div id="formBox" class="form" style="display:none; margin-top:20px;">
+            <h3>Peminjaman Baru</h3>
+            <label>Pilih Siswa</label>
+            <select id="pilihSiswa"></select>
+            <label>Tanggal Pinjam</label>
+            <input type="date" id="tglPinjam">
+            <label>Tanggal Kembali</label>
+            <input type="date" id="tglKembali">
+            <h3>Pilih Barang</h3>
+            <div id="barangList"></div>
+            <button type="button" class="btn-secondary" onclick="tambahBaris()">+ Tambah Barang</button>
+            <br><br>
+            <button class="btn-primary" onclick="simpan()">Simpan Peminjaman</button>
+            <button class="btn-secondary" onclick="hideForm()">Batal</button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:20px;">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal</th><th>Siswa</th><th>Jatuh Tempo</th><th>Barang</th><th>Status</th></tr></thead>
+                <tbody id="tblPeminjaman"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); render();
+
+    function render() {
+        const list = [...getPeminjaman()].reverse();
+        document.getElementById('tblPeminjaman').innerHTML = list.length === 0
+            ? '<tr><td colspan="6" class="empty">Belum ada transaksi</td></tr>'
+            : list.map((p, i) => {
+                const barangList = p.items.map(it => {
+                    const b = getBarangById(it.id_barang);
+                    return b ? `${b.nama} (${it.jumlah})` : '-';
+                }).join(', ');
+                return `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${p.tanggal_pinjam}</td>
+                        <td>${p.nama_siswa}</td>
+                        <td>${p.tanggal_kembali}</td>
+                        <td>${barangList}</td>
+                        <td><span class="badge ${p.status === 'dipinjam' ? 'badge-warning' : 'badge-success'}">${p.status}</span></td>
+                    </tr>
+                `;
+            }).join('');
+    }
+
+    function showForm() {
+        document.getElementById('formBox').style.display = 'block';
+        const siswas = getSiswa();
+        document.getElementById('pilihSiswa').innerHTML = '<option value="">-- Pilih Siswa --</option>' +
+            siswas.map(s => `<option value="${s.id}">${s.nis} - ${s.nama} (${s.kelas})</option>`).join('');
+        document.getElementById('tglPinjam').value = tanggalHariIni();
+        document.getElementById('tglKembali').value = tanggalPlusHari(3);
+        document.getElementById('barangList').innerHTML = '';
+        tambahBaris();
+    }
+    function hideForm() { document.getElementById('formBox').style.display = 'none'; }
+
+    function tambahBaris() {
+        const barangs = getBarang().filter(b => b.stok > 0);
+        const div = document.createElement('div');
+        div.className = 'barang-row';
+        div.innerHTML = `
+            <select class="pilihBarang">
+                <option value="">-- Pilih Barang --</option>
+                ${barangs.map(b => `<option value="${b.id}">${b.kode} - ${b.nama} (Stok: ${b.stok})</option>`).join('')}
+            </select>
+            <input type="number" class="jumlahBarang" min="1" value="1">
+            <button type="button" onclick="this.parentElement.remove()">✖</button>
+        `;
+        document.getElementById('barangList').appendChild(div);
+    }
+
+    function simpan() {
+        const id_siswa = document.getElementById('pilihSiswa').value;
+        const tglPinjam = document.getElementById('tglPinjam').value;
+        const tglKembali = document.getElementById('tglKembali').value;
+        const rows = document.querySelectorAll('#barangList .barang-row');
+        const items = [];
+        rows.forEach(r => {
+            const idb = r.querySelector('.pilihBarang').value;
+            const jml = parseInt(r.querySelector('.jumlahBarang').value);
+            if (idb && jml > 0) items.push({ id_barang: parseInt(idb), jumlah: jml });
+        });
+        if (!id_siswa || !tglPinjam || !tglKembali || items.length === 0) {
+            return alert('Lengkapi semua data dulu!');
+        }
+        const siswa = getSiswa().find(s => s.id === parseInt(id_siswa));
+        tambahPeminjaman({
+            id_siswa: parseInt(id_siswa),
+            nama_siswa: siswa.nama,
+            kelas: siswa.kelas,
+            tanggal_pinjam: tglPinjam,
+            tanggal_kembali: tglKembali,
+            items: items
+        });
+        hideForm(); render();
+    }
+</script>
+</body>
+</html>

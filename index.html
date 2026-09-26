@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peminjaman Lab</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="login-body">
+    <div class="login-box" style="max-width: 480px;">
+        <h1>📚 Peminjaman Lab</h1>
+        <p style="text-align:center; color:#718096; margin-bottom: 28px;">Pilih tipe pengguna</p>
+
+        <a href="admin/dashboard.html" class="btn-role">
+            <div class="role-icon">👨‍💼</div>
+            <div>
+                <b>Login Admin</b>
+                <p>Kelola data, peminjaman, laporan</p>
+            </div>
+        </a>
+
+        <a href="#" class="btn-role" onclick="showLoginSiswa(event)">
+            <div class="role-icon">🎓</div>
+            <div>
+                <b>Login Siswa</b>
+                <p>Pinjam barang, lihat riwayat</p>
+            </div>
+        </a>
+    </div>
+
+    <div id="modalSiswa" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>🎓 Login Siswa</h2>
+            <div id="errorSiswa" class="alert-error" style="display:none;">NIS atau password salah!</div>
+            <label>NIS</label>
+            <input type="text" id="nisInput" placeholder="Contoh: 2024001">
+            <label>Password</label>
+            <input type="password" id="passInput" placeholder="Default: siswa123">
+            <button onclick="loginSiswa()" class="btn-primary" style="width:100%; margin-top:20px;">Login</button>
+            <button onclick="closeModal()" class="btn-secondary" style="width:100%; margin-top:8px;">Batal</button>
+        </div>
+    </div>
+
+    <script src="assets/app.js"></script>
+    <script>
+        initData();
+
+        function showLoginSiswa(e) {
+            e.preventDefault();
+            document.getElementById('modalSiswa').style.display = 'flex';
+            document.getElementById('nisInput').focus();
+        }
+        function closeModal() {
+            document.getElementById('modalSiswa').style.display = 'none';
+            document.getElementById('errorSiswa').style.display = 'none';
+        }
+        function loginSiswa() {
+            const nis = document.getElementById('nisInput').value.trim();
+            const pass = document.getElementById('passInput').value.trim();
+            const siswa = getSiswa().find(s => s.nis === nis && s.password === pass);
+            if (siswa) {
+                localStorage.setItem('currentSiswa', JSON.stringify(siswa));
+                window.location.href = 'siswa/dashboard.html';
+            } else {
+                document.getElementById('errorSiswa').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

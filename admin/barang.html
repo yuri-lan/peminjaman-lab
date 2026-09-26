@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Barang</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Data Barang</h1>
+        <button class="btn-primary" onclick="showForm()">+ Tambah Barang</button>
+
+        <div id="formBox" class="form" style="display:none; margin-top:20px;">
+            <h3 id="formTitle">Tambah Barang</h3>
+            <input type="hidden" id="editId">
+            <label>Kode Barang</label>
+            <input type="text" id="kode">
+            <label>Nama Barang</label>
+            <input type="text" id="nama">
+            <label>Kategori</label>
+            <input type="text" id="kategori">
+            <label>Stok</label>
+            <input type="number" id="stok">
+            <label>Kondisi</label>
+            <select id="kondisi">
+                <option value="baik">Baik</option>
+                <option value="rusak">Rusak</option>
+                <option value="perbaikan">Perbaikan</option>
+            </select>
+            <button class="btn-primary" onclick="simpan()">Simpan</button>
+            <button class="btn-secondary" onclick="hideForm()">Batal</button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:20px;">
+            <table>
+                <thead><tr><th>No</th><th>Kode</th><th>Nama</th><th>Kategori</th><th>Stok</th><th>Kondisi</th><th>Aksi</th></tr></thead>
+                <tbody id="tblBarang"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData();
+    render();
+
+    function render() {
+        const list = getBarang();
+        document.getElementById('tblBarang').innerHTML = list.length === 0
+            ? '<tr><td colspan="7" class="empty">Belum ada barang</td></tr>'
+            : list.map((b, i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${b.kode}</td>
+                    <td>${b.nama}</td>
+                    <td>${b.kategori}</td>
+                    <td>${b.stok}</td>
+                    <td>${b.kondisi}</td>
+                    <td>
+                        <button class="btn-sm btn-warning" onclick="edit(${b.id})">Edit</button>
+                        <button class="btn-sm btn-danger" onclick="hapus(${b.id})">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function showForm() {
+        document.getElementById('formBox').style.display = 'block';
+        document.getElementById('formTitle').innerText = 'Tambah Barang';
+        document.getElementById('editId').value = '';
+        ['kode','nama','kategori','stok'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('kondisi').value = 'baik';
+    }
+    function hideForm() { document.getElementById('formBox').style.display = 'none'; }
+
+    function simpan() {
+        const id = document.getElementById('editId').value;
+        const data = {
+            kode: document.getElementById('kode').value,
+            nama: document.getElementById('nama').value,
+            kategori: document.getElementById('kategori').value,
+            stok: parseInt(document.getElementById('stok').value),
+            kondisi: document.getElementById('kondisi').value,
+        };
+        if (!data.kode || !data.nama) return alert('Kode & Nama wajib diisi!');
+        if (id) updateBarang(parseInt(id), data);
+        else tambahBarang(data);
+        hideForm(); render();
+    }
+
+    function edit(id) {
+        const b = getBarangById(id);
+        if (!b) return;
+        document.getElementById('formBox').style.display = 'block';
+        document.getElementById('formTitle').innerText = 'Edit Barang';
+        document.getElementById('editId').value = b.id;
+        document.getElementById('kode').value = b.kode;
+        document.getElementById('nama').value = b.nama;
+        document.getElementById('kategori').value = b.kategori;
+        document.getElementById('stok').value = b.stok;
+        document.getElementById('kondisi').value = b.kondisi;
+    }
+
+    function hapus(id) {
+        if (confirm('Yakin hapus barang ini?')) { hapusBarang(id); render(); }
+    }
+</script>
+</body>
+</html>

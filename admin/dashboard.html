@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Admin</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Dashboard</h1>
+        <p class="welcome">Selamat datang, <b>Administrator</b>!</p>
+        <div class="cards" id="statsCards"></div>
+        <h2>Transaksi Terbaru</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal</th><th>Siswa</th><th>Status</th></tr></thead>
+                <tbody id="tblTerbaru"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData();
+    const barangs = getBarang();
+    const siswas = getSiswa();
+    const pinjams = getPeminjaman();
+    const aktif = pinjams.filter(p => p.status === 'dipinjam').length;
+    const selesai = pinjams.filter(p => p.status === 'dikembalikan').length;
+
+    document.getElementById('statsCards').innerHTML = `
+        <div class="card"><h3>${barangs.length}</h3><p>Total Barang</p></div>
+        <div class="card"><h3>${siswas.length}</h3><p>Total Siswa</p></div>
+        <div class="card"><h3>${aktif}</h3><p>Sedang Dipinjam</p></div>
+        <div class="card"><h3>${selesai}</h3><p>Sudah Dikembalikan</p></div>
+    `;
+
+    const recent = [...pinjams].reverse().slice(0, 5);
+    document.getElementById('tblTerbaru').innerHTML = recent.length === 0
+        ? '<tr><td colspan="4" class="empty">Belum ada transaksi</td></tr>'
+        : recent.map((p, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td>${p.tanggal_pinjam}</td>
+                <td>${p.nama_siswa}</td>
+                <td><span class="badge ${p.status === 'dipinjam' ? 'badge-warning' : 'badge-success'}">${p.status}</span></td>
+            </tr>
+        `).join('');
+</script>
+</body>
+</html>

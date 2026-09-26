@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>📚 Admin Panel</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Data Barang</a>
+            <a href="siswa.html">Data Siswa</a>
+            <a href="peminjaman.html">Peminjaman</a>
+            <a href="pengembalian.html">Pengembalian</a>
+            <a href="laporan.html">Laporan</a>
+        </nav>
+        <div class="user-info">
+            <p>👤 Administrator</p>
+            <a href="../index.html" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Laporan Peminjaman</h1>
+        <div class="form" style="max-width:100%; margin-bottom:20px;">
+            <label>Dari Tanggal</label>
+            <input type="date" id="dari">
+            <label>Ke Tanggal</label>
+            <input type="date" id="ke">
+            <button class="btn-primary" onclick="filter()">Filter</button>
+            <button class="btn-secondary" onclick="window.print()">Cetak</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal</th><th>Siswa</th><th>Barang</th><th>Status</th><th>Denda</th></tr></thead>
+                <tbody id="tblLaporan"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData();
+    document.getElementById('dari').value = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    document.getElementById('ke').value = tanggalHariIni();
+    filter();
+
+    function filter() {
+        const dari = document.getElementById('dari').value;
+        const ke = document.getElementById('ke').value;
+        const list = getPeminjaman().filter(p => p.tanggal_pinjam >= dari && p.tanggal_pinjam <= ke);
+
+        document.getElementById('tblLaporan').innerHTML = list.length === 0
+            ? '<tr><td colspan="6" class="empty">Tidak ada transaksi di rentang tanggal ini</td></tr>'
+            : list.map((p, i) => {
+                const barangList = p.items.map(it => {
+                    const b = getBarangById(it.id_barang);
+                    return b ? `${b.nama} (${it.jumlah})` : '-';
+                }).join(', ');
+                return `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${p.tanggal_pinjam}</td>
+                        <td>${p.nama_siswa}</td>
+                        <td>${barangList}</td>
+                        <td><span class="badge ${p.status === 'dipinjam' ? 'badge-warning' : 'badge-success'}">${p.status}</span></td>
+                        <td>${p.denda ? formatRupiah(p.denda) : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+    }
+</script>
+</body>
+</html>

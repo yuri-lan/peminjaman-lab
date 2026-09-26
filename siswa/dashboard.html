@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Siswa</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>🎓 Area Siswa</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Daftar Barang</a>
+            <a href="pinjam.html">Ajukan Pinjam</a>
+            <a href="riwayat.html">Riwayat Saya</a>
+        </nav>
+        <div class="user-info">
+            <p id="userInfo"></p>
+            <a href="#" onclick="logoutSiswa()" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Dashboard Siswa</h1>
+        <p class="welcome">Halo, <b id="namaSiswa"></b>! Selamat datang.</p>
+        <div class="cards" style="grid-template-columns: repeat(3, 1fr);" id="statsCards"></div>
+        <h2>Peminjaman Aktif</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal</th><th>Jatuh Tempo</th><th>Barang</th><th>Status</th></tr></thead>
+                <tbody id="tblAktif"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); cekLoginSiswa();
+    const saya = getCurrentSiswa();
+    document.getElementById('namaSiswa').innerText = saya.nama;
+    document.getElementById('userInfo').innerHTML = `👤 ${saya.nama}<br><span style="font-size:11px; opacity:0.7;">${saya.kelas} — ${saya.nis}</span>`;
+
+    const myPinjam = getPeminjaman().filter(p => p.id_siswa === saya.id);
+    const aktif = myPinjam.filter(p => p.status === 'dipinjam').length;
+    const selesai = myPinjam.filter(p => p.status === 'dikembalikan').length;
+
+    document.getElementById('statsCards').innerHTML = `
+        <div class="card"><h3>${myPinjam.length}</h3><p>Total Peminjaman</p></div>
+        <div class="card"><h3>${aktif}</h3><p>Sedang Dipinjam</p></div>
+        <div class="card"><h3>${selesai}</h3><p>Sudah Dikembalikan</p></div>
+    `;
+
+    const list = myPinjam.filter(p => p.status === 'dipinjam');
+    document.getElementById('tblAktif').innerHTML = list.length === 0
+        ? '<tr><td colspan="5" class="empty">Tidak ada peminjaman aktif</td></tr>'
+        : list.map((p, i) => {
+            const items = p.items.map(it => {
+                const b = getBarangById(it.id_barang);
+                return b ? `${b.nama} (${it.jumlah})` : '-';
+            }).join(', ');
+            const telat = hitungDenda(p.tanggal_kembali) > 0;
+            return `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${p.tanggal_pinjam}</td>
+                    <td>${p.tanggal_kembali} ${telat ? '<span class="badge badge-warning" style="margin-left:6px;">TERLAMBAT</span>' : ''}</td>
+                    <td>${items}</td>
+                    <td><span class="badge badge-warning">${p.status}</span></td>
+                </tr>
+            `;
+        }).join('');
+</script>
+</body>
+</html>

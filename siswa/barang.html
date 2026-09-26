@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Daftar Barang</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>🎓 Area Siswa</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Daftar Barang</a>
+            <a href="pinjam.html">Ajukan Pinjam</a>
+            <a href="riwayat.html">Riwayat Saya</a>
+        </nav>
+        <div class="user-info">
+            <p id="userInfo"></p>
+            <a href="#" onclick="logoutSiswa()" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Daftar Barang Laboratorium</h1>
+        <p class="welcome">Barang yang tersedia untuk dipinjam</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Kode</th><th>Nama</th><th>Kategori</th><th>Stok</th><th>Kondisi</th></tr></thead>
+                <tbody id="tblBarang"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); cekLoginSiswa();
+    const saya = getCurrentSiswa();
+    document.getElementById('userInfo').innerHTML = `👤 ${saya.nama}<br><span style="font-size:11px; opacity:0.7;">${saya.kelas} — ${saya.nis}</span>`;
+
+    const list = getBarang();
+    document.getElementById('tblBarang').innerHTML = list.map((b, i) => `
+        <tr>
+            <td>${i+1}</td>
+            <td>${b.kode}</td>
+            <td>${b.nama}</td>
+            <td>${b.kategori}</td>
+            <td>${b.stok > 0
+                ? `<span class="badge badge-success">${b.stok} tersedia</span>`
+                : `<span class="badge badge-warning">Habis</span>`}</td>
+            <td>${b.kondisi}</td>
+        </tr>
+    `).join('');
+</script>
+</body>
+</html>

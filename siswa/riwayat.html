@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Riwayat Saya</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <h2>🎓 Area Siswa</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="barang.html">Daftar Barang</a>
+            <a href="pinjam.html">Ajukan Pinjam</a>
+            <a href="riwayat.html">Riwayat Saya</a>
+        </nav>
+        <div class="user-info">
+            <p id="userInfo"></p>
+            <a href="#" onclick="logoutSiswa()" class="btn-logout">Logout</a>
+        </div>
+    </aside>
+    <main class="content">
+        <h1>Riwayat Peminjaman Saya</h1>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>No</th><th>Tanggal</th><th>Jatuh Tempo</th><th>Barang</th><th>Status</th><th>Denda</th></tr></thead>
+                <tbody id="tblRiwayat"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+    initData(); cekLoginSiswa();
+    const saya = getCurrentSiswa();
+    document.getElementById('userInfo').innerHTML = `👤 ${saya.nama}<br><span style="font-size:11px; opacity:0.7;">${saya.kelas} — ${saya.nis}</span>`;
+
+    const list = [...getPeminjaman()].filter(p => p.id_siswa === saya.id).reverse();
+    document.getElementById('tblRiwayat').innerHTML = list.length === 0
+        ? '<tr><td colspan="6" class="empty">Belum ada riwayat</td></tr>'
+        : list.map((p, i) => {
+            const items = p.items.map(it => {
+                const b = getBarangById(it.id_barang);
+                return b ? `${b.nama} (${it.jumlah})` : '-';
+            }).join(', ');
+            return `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${p.tanggal_pinjam}</td>
+                    <td>${p.tanggal_kembali}</td>
+                    <td>${items}</td>
+                    <td><span class="badge ${p.status === 'dipinjam' ? 'badge-warning' : 'badge-success'}">${p.status}</span></td>
+                    <td>${p.denda ? formatRupiah(p.denda) : '-'}</td>
+                </tr>
+            `;
+        }).join('');
+</script>
+</body>
+</html>
