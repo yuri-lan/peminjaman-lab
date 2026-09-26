@@ -17,7 +17,7 @@ Aplikasi web untuk mengelola peminjaman barang di laboratorium sekolah. **Fronte
 - 🎓 Area Siswa
 
 ## 🚀 Demo Online
-🔗 [Buka Aplikasi](https://USERNAME.github.io/peminjaman-lab/)
+🔗 [Buka Aplikasi](https://yuri-lan.github.io/peminjaman-lab/)
 
 ## 🔐 Akun Default
 
